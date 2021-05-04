@@ -1,0 +1,31 @@
+name: CI
+on:
+  push:
+    paths:
+      - ".github/workflows/*.yml"
+      - "lib/**"
+      - "src/**"
+      - ".docker/**"
+    branches-ignore:
+      - "release/**"
+jobs:
+  build:
+    name: "PlatformIO"
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build the binary in the Docker Container
+        id: binary
+        run: |
+          pushd .docker
+          docker build -t tiryoh/platformio-core-esp32-binary .
+          popd
+          docker run --rm --mount type=bind,source="$(pwd)",target=/workspace -u $(id -u $USER):$(id -g $USER) tiryoh/platformio-core-esp32-binary
+          echo ::set-output name=paths::$(ls build/*.bin)
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: m5stack-firmware
+          path: build

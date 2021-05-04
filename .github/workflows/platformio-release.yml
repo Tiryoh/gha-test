@@ -1,0 +1,59 @@
+name: Release
+on:
+  push:
+    branches:
+      - "release/**"
+    tags:
+      - 'v*'
+jobs:
+  build:
+    name: "PlatformIO"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Build the binary in the Docker Container
+        id: binary
+        run: |
+          pushd .docker
+            docker build -t tiryoh/platformio-core-esp32-binary .
+          popd
+          docker run --rm --mount type=bind,source="$(pwd)",target=/workspace -u $(id -u $USER):$(id -g $USER) tiryoh/platformio-core-esp32-binary
+          content="$(ls -1 build/*.bin)"
+          # https://github.community/t/set-output-truncates-multiline-strings/16852/3
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=paths::$content"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: m5stack-firmware
+          path: build
+
+      - name: Extract tag name and log
+        if: startsWith(github.ref, 'refs/tags/')
+        id: repo
+        run: |
+          echo "M5Stack 9axis IMU data publisher" | tee msg.txt
+          echo "# git commit log" | tee -a msg.txt
+          git log --pretty=format:"* %s" $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))..HEAD | tee -a msg.txt
+          echo -e "\n\nsample command:" | tee -a msg.txt
+          echo "\`\`\`" | tee -a msg.txt
+          cat build/example*.sh | tee -a msg.txt
+          echo "\`\`\`" | tee -a msg.txt
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: msg.txt
+          tag_name: ${{ steps.repo.outputs.version }}
+          files: ${{ steps.binary.outputs.paths }}
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
