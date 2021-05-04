@@ -6,6 +6,7 @@ on:
       - "lib/**"
       - "src/**"
       - ".docker/**"
+      - platformio.ini
     branches-ignore:
       - "release/**"
 jobs:
