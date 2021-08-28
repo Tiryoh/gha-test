@@ -17,7 +17,6 @@ jobs:
           job_name: test
 
       - name: Get Current Job Log URL 2
-        id: jobs
         uses: ./.github/workflows/gha-jobid/
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
