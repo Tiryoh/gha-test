@@ -9,9 +9,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Get Current Job Log URL
+      - name: Get Current Job Log URL 1
         id: jobs
         uses: Tiryoh/gha-jobid-action@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: test
+
+      - name: Get Current Job Log URL 2
+        id: jobs
+        uses: ./.github/workflows/gha-jobid/
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: test

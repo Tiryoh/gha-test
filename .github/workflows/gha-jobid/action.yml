@@ -1,0 +1,26 @@
+name: "GitHub Actions job_id parser"
+description: "GitHub Action to get the current workflow run's job_id"
+inputs:
+  github_token:
+    description: "GITHUB_TOKEN to use GitHub API v3"
+    required: true
+  repository:
+    description: "target GitHub repository"
+    required: false
+  run_id:
+    description: "run_id of target workflow run"
+    required: false
+  job_name:
+    description: "job_name of tartget workflow jobs"
+    required: true
+outputs:
+  job_id:
+    description: "job_id of target workflow jobs"
+  html_url:
+    description: "html_url of target workflow jobs"
+runs:
+  using: "docker"
+  image: "Dockerfile"
+branding:
+  icon: "link"
+  color: "blue"
