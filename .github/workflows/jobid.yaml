@@ -1,0 +1,21 @@
+name: Get job_id
+on:
+  push
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get Current Job Log URL
+        id: jobs
+        uses: Tiryoh/gha-jobid-action@v0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: test
+
+      - name: Update GitHub wiki
+        run: |
+          echo {{ steps.jobs.outputs.html_url }}
